@@ -11,9 +11,9 @@ repositories {
 }
 
 dependencies {
-    implementation("ch.qos.logback:logback-classic:1.5.18")//for logging
+    implementation("ch.qos.logback:logback-classic:1.5.32")//for logging
     implementation("io.ktor:ktor-server-core:3.0.0")
-    implementation("io.ktor:ktor-server-netty:4.1.72")
+    implementation("io.ktor:ktor-server-netty:3.5.0")
     implementation("io.ktor:ktor-server-content-negotiation:3.0.0")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0")
 

@@ -6,10 +6,30 @@ import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.routing
+
+val threatIndicators = mutableListOf(
+
+    ThreatIntelModel(
+        1,
+        "IP",
+        "8.8.8.8",
+        "LOW"
+    ),
+
+    ThreatIntelModel(
+        2,
+        "DOMAIN",
+        "malicious-example.com",
+        "HIGH"
+    )
+)
 
 fun main() {
     embeddedServer(Netty, port = 8080) {
@@ -55,32 +75,7 @@ fun main() {
             }
 
             get("/ioc/all") {
-
-                val indicators = listOf(
-
-                    ThreatIntelModel(
-                        1,
-                        "IP",
-                        "8.8.8.8",
-                        "LOW"
-                    ),
-
-                    ThreatIntelModel(
-                        2,
-                        "DOMAIN",
-                        "malicious-example.com",
-                        "HIGH"
-                    ),
-
-                    ThreatIntelModel(
-                        3,
-                        "HASH",
-                        "a94a8fe5ccb19ba61c4",
-                        "CRITICAL"
-                    )
-                )
-
-                call.respond(indicators)
+                call.respond(threatIndicators)
             }
 
             get("/ioc/{id}"){
@@ -105,7 +100,39 @@ fun main() {
                 )
             }
 
+            post("/ioc/create"){
+                val newIndicator = call.receive<ThreatIntelModel>()
+                if (newIndicator.value.isBlank()){
+                    call.respond(HttpStatusCode.BadRequest, ErrorResponse("IOC value cannot be blank"))
+                    return@post
+                }
+                threatIndicators.add(newIndicator)
+                call.respond(HttpStatusCode.Created, newIndicator)
+            }
 
+            put ("/ioc/{id}"){
+                val id = call.parameters["id"]?.toIntOrNull()
+                if (id == null) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        ErrorResponse("Invalid IOC ID")
+                    )
+
+                    return@put
+                }
+
+                val updatedIndicator = call.receive<ThreatIntelModel>()
+                val existingIndicatorIndex = threatIndicators.indexOfFirst { it.id == id }
+
+                if (existingIndicatorIndex == -1){
+                    call.respond(HttpStatusCode.NotFound,ErrorResponse("ThreatIntelModel not found with ID $id"))
+
+                    return@put
+                }
+
+                threatIndicators[existingIndicatorIndex] = updatedIndicator
+                call.respond(HttpStatusCode.OK, updatedIndicator)
+            }
         }
     }.start(wait = true)
 }
