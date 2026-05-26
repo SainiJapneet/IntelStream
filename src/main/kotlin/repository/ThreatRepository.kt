@@ -1,42 +1,58 @@
 package org.example.repository
 
+import org.example.database.ThreatTable
 import org.example.models.ThreatIntelModel
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.update
 
 object ThreatRepository {
-    private val threatIndicators = mutableListOf<ThreatIntelModel>(
-        ThreatIntelModel(
-            1,
-            "IP",
-            "8.8.8.8",
-            "LOW"
-        ),
-
-        ThreatIntelModel(
-            2,
-            "DOMAIN",
-            "malicious-example.com",
-            "HIGH"
-        )
-    )
 
     fun getAll(): List<ThreatIntelModel> {
-        return threatIndicators
+        return transaction {
+            ThreatTable.selectAll().map {
+                ThreatIntelModel(
+                    id = it[ThreatTable.id],
+                    type = it[ThreatTable.type],
+                    value = it[ThreatTable.value],
+                    severity = it[ThreatTable.severity],
+                )
+            }
+        }
     }
 
-    fun addThreat(threatModel: ThreatIntelModel) {
-        threatIndicators.add(threatModel)
+    fun addThreat(indicator: ThreatIntelModel) {
+        transaction {
+            ThreatTable.insert {
+
+                it[id] = indicator.id
+                it[type] = indicator.type
+                it[value] = indicator.value
+                it[severity] = indicator.severity
+            }
+        }
     }
 
     fun updateThreat(id: Int, updated: ThreatIntelModel): Boolean {
-        val index = threatIndicators.indexOfFirst { it.id == id }
-        if (index == -1) {
-            return false
+        return transaction {
+            val updatedRows = ThreatTable.update(
+                where = { ThreatTable.id eq id}
+            ){
+                it[type] = updated.type
+                it[value] = updated.value
+                it[severity] = updated.severity
+            }
+            updatedRows > 0
         }
-        threatIndicators[index] = updated
-        return true
     }
 
     fun deleteThreat(id: Int): Boolean {
-        return threatIndicators.removeIf { it.id == id }
+        return transaction {
+            val deletedRows = ThreatTable.deleteWhere { ThreatTable.id eq id }
+            deletedRows > 0
+        }
     }
 }

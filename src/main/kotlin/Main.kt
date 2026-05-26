@@ -14,6 +14,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.routing
+import org.example.database.DatabaseFactory
 import org.example.models.BaseResponse
 import org.example.models.ErrorResponse
 import org.example.models.HealthResponse
@@ -22,6 +23,8 @@ import org.example.models.ThreatIntelModel
 import org.example.plugins.configureExceptionHandling
 import org.example.routes.threatRoutes
 fun main() {
+    DatabaseFactory.init()
+
     embeddedServer(Netty, port = 8080) {
 
         install(ContentNegotiation) {

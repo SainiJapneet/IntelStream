@@ -16,7 +16,17 @@ object ThreatService {
     }
 
     fun updateIndicator(id: Int, indicator: ThreatIntelModel): Boolean{
-        return ThreatRepository.updateThreat(id, indicator)
+        if (indicator.value.isBlank()) {
+
+            throw IllegalArgumentException(
+                "IOC value cannot be empty"
+            )
+        }
+
+        return ThreatRepository.updateThreat(
+            id,
+            indicator
+        )
     }
 
     fun deleteIndicator(id: Int): Boolean{

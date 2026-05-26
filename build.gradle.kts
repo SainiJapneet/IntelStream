@@ -18,6 +18,14 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0")
     implementation("io.ktor:ktor-server-status-pages:3.0.0")
 
+    implementation("org.postgresql:postgresql:42.7.3")
+
+    implementation("org.jetbrains.exposed:exposed-core:0.53.0")
+    implementation("org.jetbrains.exposed:exposed-dao:0.53.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.53.0")
+
+    implementation("io.github.jan-tennert.supabase:supabase-kt:3.5.0")
+
     testImplementation(kotlin("test"))
 }
 
